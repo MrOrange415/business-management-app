@@ -6,18 +6,30 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
     const login = async (username, password) => {
-        const response = await fetch('http://localhost:3001/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-        });
-        const { token } = await response.json();
-        console.log(`did we get a token? ${token}`);
-        localStorage.setItem('accessToken', token);
+        try {
+            const response = await fetch('http://localhost:3001/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+    
+            const data = await response.json();
+            localStorage.setItem('accessToken', data.token);
+            if (response.ok) {
+                setUser(data);
+                return { success: true, user: data };
+            } else {
+                throw new Error(data.message || "Failed to login");
+            }
+        } catch (error) {
+            console.error("Login failed:", error);
+            return { success: false, message: error.message };
+        }
     };
+    
 
     const logout = () => {
-        setUser(null);  // Clear user data on logout
+        setUser(null);
     };
 
     return (

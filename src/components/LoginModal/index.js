@@ -2,27 +2,22 @@ import React, { useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 
-function LoginModal() {
-  const [open, setOpen] = useState(false);
+function LoginModal({ open, onClose, setIsLoggedIn }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login, logout, user } = useAuth();
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
+  const { login } = useAuth();
   const handleLogin = async () => {
-    await login(username, password);
-    handleClose();
-  };
-
-  const handleLogout = () => {
-    logout();
+    const result = await login(username, password);
+    if (result.success) {
+      onClose();
+      setIsLoggedIn(true);
+    } else {
+        console.error(result.message);
+    }
   };
 
   return (
-    <Dialog open={true} onClose={handleClose}>
+    <Dialog open={open} onClose={onClose}>
         <DialogTitle>Login / Create Account</DialogTitle>
         <DialogContent>
             <TextField
@@ -48,9 +43,8 @@ function LoginModal() {
             />
         </DialogContent>
         <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={onClose}>Cancel</Button>
             <Button onClick={handleLogin}>Login</Button>
-            <Button onClick={handleLogout}>Logout</Button> {/* If you want a logout button here */}
         </DialogActions>
     </Dialog>
   );

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import LoginModal from './components/LoginModal';
-import dayGridPlugin from '@fullcalendar/daygrid'; // for day grid view
+import dayGridPlugin from '@fullcalendar/daygrid';
+import Button from '@mui/material/Button';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(!isLoggedIn);
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -20,7 +22,7 @@ function App() {
         if (res.ok) {
           setIsLoggedIn(true);
         } else {
-          localStorage.removeItem('accessToken');
+          handleLogout();
         }
       })
       .catch(error => console.error('accessToken validation error:', error));
@@ -31,11 +33,26 @@ function App() {
     setModalOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    setIsLoggedIn(false);
+    logout();
+  }
+
   return (
-    <AuthProvider>
+    <div>
+      <div style={{ margin: '20px' }}>
+      {isLoggedIn ? (
+        <Button variant="contained" color="primary" onClick={handleLogout}>
+          Logout
+        </Button>
+        ) : (
+          <p></p>
+        )}
+      </div>
       <div>
         {!isLoggedIn ? (
-          <LoginModal open={modalOpen} onClose={handleCloseModal} />
+          <LoginModal open={modalOpen} onClose={handleCloseModal} setIsLoggedIn={setIsLoggedIn} />
         ) : (
           <p></p>
         )}
@@ -48,7 +65,7 @@ function App() {
           <p></p>
         )}
       </div>
-    </AuthProvider>
+    </div>
   );
 }
 
