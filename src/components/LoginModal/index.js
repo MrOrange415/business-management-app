@@ -6,11 +6,13 @@ function LoginModal({ open, onClose, setIsLoggedIn }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
     const result = await login(username, password);
     if (result.success) {
-      onClose();
       setIsLoggedIn(true);
+      onClose();
     } else {
         console.error(result.message);
     }
@@ -19,6 +21,7 @@ function LoginModal({ open, onClose, setIsLoggedIn }) {
   return (
     <Dialog open={open} onClose={onClose}>
         <DialogTitle>Login / Create Account</DialogTitle>
+        <form onSubmit={handleLogin}>
         <DialogContent>
             <TextField
                 autoFocus
@@ -44,8 +47,9 @@ function LoginModal({ open, onClose, setIsLoggedIn }) {
         </DialogContent>
         <DialogActions>
             <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={handleLogin}>Login</Button>
+            <Button type="submit">Login</Button> 
         </DialogActions>
+        </form>
     </Dialog>
   );
 }
