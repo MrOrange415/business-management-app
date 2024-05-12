@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { useAuth } from './context/AuthContext';
 import LoginModal from './components/LoginModal';
 import Button from '@mui/material/Button';
+import EventDialogModal from './components/EventDialogModal';
+import moment from 'moment';
 import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(false);
   const [modalOpen, setModalOpen] = useState(!isLoggedIn);
+  const [eventDialogModalOpen, setEventDialogModalOpen] = useState(false);
   const [calendarView, setCalendarView] = useState('dayGridMonth');
   const { logout } = useAuth();
 
@@ -41,8 +46,8 @@ function App() {
     console.log(`calendarView ${calendarView}`);
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
+  const handleCloseEventDialogModal = () => {
+    setEventDialogModalOpen(false);
   };
 
   const handleLogout = () => {
@@ -52,10 +57,21 @@ function App() {
     logout();
   }
 
+  const handleDateClick = (arg) => {
+    setEventDialogModalOpen(true);
+    console.log("Clicked on date: ", moment(arg.date).format('YYYY-MM-DD hh:mm A'));
+    setSelectedDate(`${moment(arg.date).format('YYYY-MM-DD hh:mm A')}`);
+    // Open modal here to add details
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   return (
     <div>  
       {isLoggedIn ? (
-        <div class="logout-button">
+        <div className="logout-button">
           <Button sx={{ padding: '1px 10px', fontSize: '0.5rem' }} variant="contained" color="inherit" onClick={handleLogout}>
             Logout
           </Button>
@@ -64,7 +80,7 @@ function App() {
         <p></p>
       )}
       {isLoggedIn ? (
-        <div class="view-menu">
+        <div className="view-menu">
           <Button sx={{ padding: '1px 20px', fontSize: '0.75rem' }} variant="outlined" color="secondary" onClick={() => handleViewChange('timeGridDay')}>
             Day
           </Button>
@@ -90,12 +106,19 @@ function App() {
         {isLoggedIn ? (
           <FullCalendar
             key={calendarView}
-            plugins={[dayGridPlugin, timeGridPlugin]}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView={calendarView}
+            dateClick={handleDateClick}
           />
         ) : (
           <p></p>
         )}
+        <EventDialogModal
+          open={eventDialogModalOpen}
+          onClose={handleCloseEventDialogModal}
+          // onSubmit={handleEventSubmit}
+          defaultDate={selectedDate}
+        />
       </div>
     </div>
   );
