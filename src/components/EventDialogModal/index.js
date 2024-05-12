@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import moment from 'moment';
 import { Dialog, TextField, Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
-function EventDialogModal({ open, onClose, onSubmit, defaultDate }) {
+function EventDialogModal({ open, onClose, onSubmit, startDate }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  useEffect(() => {
+    setEndDate(moment(startDate).add(30, 'minutes').format('YYYY-MM-DD hh:mm A'));
+  }, [startDate]);
 
   const handleSubmit = () => {
-    onSubmit({
+    const payload = {
       title,
       description,
-      date: defaultDate
-    });
+      start: moment(startDate).format(),
+      end: moment(endDate).format()
+    }
+
+    onSubmit(payload);
     onClose();
   };
 
@@ -38,12 +47,22 @@ function EventDialogModal({ open, onClose, onSubmit, defaultDate }) {
         />
         <TextField
           margin="dense"
-          label="Date"
+          label="Start Date"
           fullWidth
           variant="outlined"
-          value={defaultDate}
+          value={startDate}
           InputProps={{
             readOnly: true,
+          }}
+        />
+        <TextField
+          margin="dense"
+          label="End Date"
+          fullWidth
+          variant="outlined"
+          value={endDate}
+          InputProps={{
+            readOnly: false,
           }}
         />
       </DialogContent>

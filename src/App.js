@@ -12,7 +12,7 @@ import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(moment());
   const [modalOpen, setModalOpen] = useState(!isLoggedIn);
   const [eventDialogModalOpen, setEventDialogModalOpen] = useState(false);
   const [calendarView, setCalendarView] = useState('dayGridMonth');
@@ -59,14 +59,39 @@ function App() {
 
   const handleDateClick = (arg) => {
     setEventDialogModalOpen(true);
-    console.log("Clicked on date: ", moment(arg.date).format('YYYY-MM-DD hh:mm A'));
     setSelectedDate(`${moment(arg.date).format('YYYY-MM-DD hh:mm A')}`);
-    // Open modal here to add details
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
+
+  const handleEventSubmit = async (payload) => {
+    const token = localStorage.getItem('accessToken');
+    console.log(`payload ${JSON.stringify(payload)}`);
+    try {
+      const response = await fetch('http://localhost:3001/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        console.log('Event created successfully:', response);
+        setEventDialogModalOpen(false);
+        return response.json();
+      } else {
+        console.error('Event creation failed', await response.text());
+      }
+    } catch (error) {
+      console.error('Network error', error);
+    }
+  }
+  
 
   return (
     <div>  
@@ -116,8 +141,8 @@ function App() {
         <EventDialogModal
           open={eventDialogModalOpen}
           onClose={handleCloseEventDialogModal}
-          // onSubmit={handleEventSubmit}
-          defaultDate={selectedDate}
+          onSubmit={handleEventSubmit}
+          startDate={selectedDate}
         />
       </div>
     </div>
