@@ -2,30 +2,38 @@ import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import { Dialog, TextField, Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
-function EventDialogModal({ open, onClose, onSubmit, startDate }) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [endDate, setEndDate] = useState('');
+function EventDialogModal({ open, onClose, onSubmit, event }) {
+  const [mode, setMode] = useState(event.mode);
+  const [title, setTitle] = useState(event.title);
+  const [description, setDescription] = useState(event.description);
 
   useEffect(() => {
-    setEndDate(moment(startDate).add(30, 'minutes').format('YYYY-MM-DD hh:mm A'));
-  }, [startDate]);
+    setTitle(event.title);
+  }, [event.title]);
+
+  useEffect(() => {
+    setDescription(event.description);
+  }, [event.description]);
+
+  useEffect(() => {
+    setMode(event.mode);
+  }, [event.mode]);
 
   const handleSubmit = () => {
     const payload = {
       title,
       description,
-      start: moment(startDate).format(),
-      end: moment(endDate).format()
+      start: moment(event.formattedStartDate).format(),
+      end: moment(event.formattedEndDate).format()
     }
-
+    console.log(`payload ${payload}`);
     onSubmit(payload);
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add New Event</DialogTitle>
+      <DialogTitle>{mode === 'edit' ? 'Edit Event' : 'Add New Event'}</DialogTitle>
       <DialogContent>
         <TextField
           margin="dense"
@@ -50,7 +58,7 @@ function EventDialogModal({ open, onClose, onSubmit, startDate }) {
           label="Start Date"
           fullWidth
           variant="outlined"
-          value={startDate}
+          value={event.formattedStartDate}
           InputProps={{
             readOnly: true,
           }}
@@ -60,7 +68,7 @@ function EventDialogModal({ open, onClose, onSubmit, startDate }) {
           label="End Date"
           fullWidth
           variant="outlined"
-          value={endDate}
+          value={event.formattedEndDate}
           InputProps={{
             readOnly: false,
           }}

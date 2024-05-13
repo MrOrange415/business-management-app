@@ -12,11 +12,17 @@ import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(moment());
   const [modalOpen, setModalOpen] = useState(!isLoggedIn);
   const [eventDialogModalOpen, setEventDialogModalOpen] = useState(false);
   const [calendarView, setCalendarView] = useState(localStorage.getItem('calendarView') || 'dayGridMonth');
-
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState({
+    formattedStartDate: '',
+    formattedEndDate: '',
+    title: '',
+    description: '',
+    mode: 'new'
+  });
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -39,8 +45,23 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log("View changed to:", calendarView);
-  }, [calendarView]);
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = () => {
+    const token = localStorage.getItem('accessToken');
+    fetch('http://localhost:3001/events', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(`got data ${JSON.stringify(data)}`);
+        setEvents(data);
+    })
+    .catch(error => console.error('Error fetching events:', error));
+};
 
   const handleViewChange = (view) => {
     setCalendarView(view);
@@ -54,15 +75,35 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('calendarView');
     setIsLoggedIn(false);
     setModalOpen(true);
     logout();
   }
 
   const handleDateClick = (arg) => {
+    setSelectedEvent({
+      formattedStartDate: moment(arg.date).format('YYYY-MM-DD hh:mm A'),
+      formattedEndDate: moment(arg.date).add(30, 'minutes').format('YYYY-MM-DD hh:mm A'),
+      title: '',
+      description: '',
+      mode: 'new'
+    });
+
     setEventDialogModalOpen(true);
-    setSelectedDate(`${moment(arg.date).format('YYYY-MM-DD hh:mm A')}`);
   };
+
+  const handleEventClick = (clickInfo) => {
+    setSelectedEvent({
+      formattedStartDate: moment(clickInfo.event.start).format('YYYY-MM-DD hh:mm A'),
+      formattedEndDate: moment(clickInfo.event.end).format('YYYY-MM-DD hh:mm A'),
+      title: clickInfo.event.title,
+      description: clickInfo.event.extendedProps.description,
+      mode: 'edit'
+    });
+
+    setEventDialogModalOpen(true);
+};
 
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -71,7 +112,7 @@ function App() {
 
   const handleEventSubmit = async (payload) => {
     const token = localStorage.getItem('accessToken');
-    console.log(`payload ${JSON.stringify(payload)}`);
+
     try {
       const response = await fetch('http://localhost:3001/events', {
         method: 'POST',
@@ -83,8 +124,8 @@ function App() {
       });
 
       if (response.ok) {
-        console.log('Event created successfully:', response);
         setEventDialogModalOpen(false);
+        fetchEvents();
         return response.json();
       } else {
         console.error('Event creation failed', await response.text());
@@ -136,6 +177,8 @@ function App() {
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView={calendarView}
             dateClick={handleDateClick}
+            eventClick={handleEventClick}
+            events={events}
           />
         ) : (
           <p></p>
@@ -144,7 +187,7 @@ function App() {
           open={eventDialogModalOpen}
           onClose={handleCloseEventDialogModal}
           onSubmit={handleEventSubmit}
-          startDate={selectedDate}
+          event={selectedEvent}
         />
       </div>
     </div>
