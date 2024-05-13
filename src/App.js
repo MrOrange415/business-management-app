@@ -15,7 +15,8 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(moment());
   const [modalOpen, setModalOpen] = useState(!isLoggedIn);
   const [eventDialogModalOpen, setEventDialogModalOpen] = useState(false);
-  const [calendarView, setCalendarView] = useState('dayGridMonth');
+  const [calendarView, setCalendarView] = useState(localStorage.getItem('calendarView') || 'dayGridMonth');
+
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -43,6 +44,7 @@ function App() {
 
   const handleViewChange = (view) => {
     setCalendarView(view);
+    localStorage.setItem('calendarView', view);
     console.log(`calendarView ${calendarView}`);
   };
 
