@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
-import { Dialog, TextField, Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Dialog, TextField, Button, DialogActions, DialogContent, DialogTitle, Box } from '@mui/material';
 
-function EventDialogModal({ open, onClose, onSubmit, event }) {
+function EventDialogModal({ open, onClose, onSubmit, onDelete, event }) {
   const [mode, setMode] = useState(event.mode);
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
@@ -26,8 +26,14 @@ function EventDialogModal({ open, onClose, onSubmit, event }) {
       start: moment(event.formattedStartDate).format(),
       end: moment(event.formattedEndDate).format()
     }
-    console.log(`payload ${payload}`);
+
     onSubmit(payload);
+    onClose();
+  };
+
+  const handleDelete = () => {
+    console.log(`event ${JSON.stringify(event)}`);
+    onDelete(event.id);
     onClose();
   };
 
@@ -74,9 +80,14 @@ function EventDialogModal({ open, onClose, onSubmit, event }) {
           }}
         />
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ justifyContent: 'space-between', width: '95%' }}>
+      <Box sx={{ flex: '0 1 auto' }}> 
+        <Button onClick={handleDelete}>Delete</Button>
+      </Box>
+      <Box sx={{ flex: '0 1 auto' }}>
         <Button onClick={onClose}>Cancel</Button>
         <Button onClick={handleSubmit}>Submit</Button>
+      </Box>
       </DialogActions>
     </Dialog>
   );

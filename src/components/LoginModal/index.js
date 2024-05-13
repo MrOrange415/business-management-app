@@ -14,7 +14,7 @@ function LoginModal({ open, onClose, setIsLoggedIn }) {
       setIsLoggedIn(true);
       onClose();
     } else {
-        console.error(result.message);
+      console.error(result.message);
     }
   };
 

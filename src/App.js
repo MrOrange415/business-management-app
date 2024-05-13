@@ -17,6 +17,7 @@ function App() {
   const [calendarView, setCalendarView] = useState(localStorage.getItem('calendarView') || 'dayGridMonth');
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState({
+    id: '',
     formattedStartDate: '',
     formattedEndDate: '',
     title: '',
@@ -47,6 +48,10 @@ function App() {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [isLoggedIn]);
 
   const fetchEvents = () => {
     const token = localStorage.getItem('accessToken');
@@ -94,7 +99,9 @@ function App() {
   };
 
   const handleEventClick = (clickInfo) => {
+    console.log(`clickInfo ${JSON.stringify(clickInfo.event)}`);
     setSelectedEvent({
+      id: clickInfo.event.extendedProps._id,
       formattedStartDate: moment(clickInfo.event.start).format('YYYY-MM-DD hh:mm A'),
       formattedEndDate: moment(clickInfo.event.end).format('YYYY-MM-DD hh:mm A'),
       title: clickInfo.event.title,
@@ -129,6 +136,30 @@ function App() {
         return response.json();
       } else {
         console.error('Event creation failed', await response.text());
+      }
+    } catch (error) {
+      console.error('Network error', error);
+    }
+  }
+
+  const handleEventDelete = async (eventId) => {
+    const token = localStorage.getItem('accessToken');
+
+    try {
+      const response = await fetch(`http://localhost:3001/events/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setEventDialogModalOpen(false);
+        fetchEvents();
+        return response.json();
+      } else {
+        console.error('Event deletion failed', await response.text());
       }
     } catch (error) {
       console.error('Network error', error);
@@ -187,6 +218,7 @@ function App() {
           open={eventDialogModalOpen}
           onClose={handleCloseEventDialogModal}
           onSubmit={handleEventSubmit}
+          onDelete={handleEventDelete}
           event={selectedEvent}
         />
       </div>
