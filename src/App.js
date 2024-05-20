@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import interactionPlugin from '@fullcalendar/interaction';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LoginModal from './components/LoginModal';
-import Button from '@mui/material/Button';
-import EventDialogModal from './components/EventDialogModal';
+import Calendar from './components/Calendar';
+import FinishSignUp from './components/FinishSignUp';
 import moment from 'moment';
 import './App.css';
 
@@ -24,24 +21,16 @@ function App() {
     description: '',
     mode: 'new'
   });
-  const { logout } = useAuth();
+  const { currentUser, logout } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      fetch('http://localhost:3001/validateToken', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(res => {
-        if (res.ok) {
-          setIsLoggedIn(true);
-        } else {
-          handleLogout();
-        }
-      })
-      .catch(error => console.error('accessToken validation error:', error));
+    console.log(`checking for a current user`);
+    if (currentUser) {
+      console.log(`currentUser ${currentUser}`);
+      setIsLoggedIn(true);
+    } else {
+      console.log(`isLoggedIn ${isLoggedIn}`);
+      handleLogout();
     }
   }, []);
 
@@ -54,18 +43,18 @@ function App() {
   }, [isLoggedIn]);
 
   const fetchEvents = () => {
-    const token = localStorage.getItem('accessToken');
-    fetch('http://localhost:3001/events', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(`got data ${JSON.stringify(data)}`);
-        setEvents(data);
-    })
-    .catch(error => console.error('Error fetching events:', error));
+    // const token = localStorage.getItem('accessToken');
+    // fetch('http://localhost:3001/events', {
+    //     headers: {
+    //         'Authorization': `Bearer ${token}`
+    //     }
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //     console.log(`got data ${JSON.stringify(data)}`);
+    //     setEvents(data);
+    // })
+    // .catch(error => console.error('Error fetching events:', error));
 };
 
   const handleViewChange = (view) => {
@@ -78,12 +67,18 @@ function App() {
     setEventDialogModalOpen(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
+  const handleLogout = async () => {
+    // localStorage.removeItem('emailForSignIn');
     localStorage.removeItem('calendarView');
-    setIsLoggedIn(false);
-    setModalOpen(true);
-    logout();
+    try {
+      await logout();
+      console.log("Logged out successfully!");
+      setIsLoggedIn(false);
+      setModalOpen(true);
+      console.log(`modalOpen ${modalOpen}`)
+    } catch (error) {
+        console.error("Failed to log out:", error);
+    }
   }
 
   const handleDateClick = (arg) => {
@@ -168,61 +163,24 @@ function App() {
   
 
   return (
-    <div>  
-      {isLoggedIn ? (
-        <div className="logout-button">
-          <Button sx={{ padding: '1px 10px', fontSize: '0.5rem' }} variant="contained" color="inherit" onClick={handleLogout}>
-            Logout
-          </Button>
-        </div>
-      ) : (
-        <p></p>
-      )}
-      {isLoggedIn ? (
-        <div className="view-menu">
-          <Button sx={{ padding: '1px 20px', fontSize: '0.75rem' }} variant="outlined" color="secondary" onClick={() => handleViewChange('timeGridDay')}>
-            Day
-          </Button>
-          <Button sx={{ padding: '1px 20px', fontSize: '0.75rem' }} variant="outlined" color="secondary" onClick={() => handleViewChange('timeGridWeek')}>
-            Week
-          </Button>
-          <Button sx={{ padding: '1px 20px', fontSize: '0.75rem' }} variant="outlined" color="secondary" onClick={() => handleViewChange('dayGridMonth')}>
-            Month
-          </Button>
-          <Button sx={{ padding: '1px 20px', fontSize: '0.75rem' }} variant="outlined" color="secondary" onClick={() => handleViewChange('dayGridYear')}>
-            Year
-          </Button>
-        </div>
-      ) : (
-        <p></p>
-      )}
-      <div>
-        {!isLoggedIn ? (
-          <LoginModal open={modalOpen} onClose={handleCloseModal} setIsLoggedIn={setIsLoggedIn} />
-        ) : (
-          <p></p>
-        )}
-        {isLoggedIn ? (
-          <FullCalendar
-            key={calendarView}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView={calendarView}
-            dateClick={handleDateClick}
-            eventClick={handleEventClick}
-            events={events}
-          />
-        ) : (
-          <p></p>
-        )}
-        <EventDialogModal
-          open={eventDialogModalOpen}
-          onClose={handleCloseEventDialogModal}
-          onSubmit={handleEventSubmit}
-          onDelete={handleEventDelete}
-          event={selectedEvent}
-        />
-      </div>
-    </div>
+      <Routes>
+        <Route path="/login" element={<LoginModal open={modalOpen} onClose={handleCloseModal} />} />
+        <Route path="/calendar" element={<Calendar 
+          handleLogout={handleLogout}
+          handleViewChange={handleViewChange}
+          calendarView={calendarView}
+          handleDateClick={handleDateClick}
+          handleEventClick={handleEventClick}
+          events={events}
+          eventDialogModalOpen={eventDialogModalOpen}
+          handleCloseEventDialogModal={handleCloseEventDialogModal}
+          handleEventSubmit={handleEventSubmit}
+          handleEventDelete={handleEventDelete}
+          selectedEvent={selectedEvent}
+        />} />
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/auth/finish-sign-up" element={<FinishSignUp />} />
+      </Routes>
   );
 }
 
