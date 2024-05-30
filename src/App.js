@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { auth } from './config/firebase-config';
 import { useAuth } from './context/AuthContext';
 import LoginModal from './components/LoginModal';
 import Calendar from './components/Calendar';
@@ -21,18 +23,7 @@ function App() {
     description: '',
     mode: 'new'
   });
-  const { currentUser, logout } = useAuth();
-
-  useEffect(() => {
-    console.log(`checking for a current user`);
-    if (currentUser) {
-      console.log(`currentUser ${currentUser}`);
-      setIsLoggedIn(true);
-    } else {
-      console.log(`isLoggedIn ${isLoggedIn}`);
-      handleLogout();
-    }
-  }, []);
+  const { logout } = useAuth();
 
   useEffect(() => {
     fetchEvents();
@@ -42,25 +33,34 @@ function App() {
     fetchEvents();
   }, [isLoggedIn]);
 
-  const fetchEvents = () => {
-    // const token = localStorage.getItem('accessToken');
-    // fetch('http://localhost:3001/events', {
-    //     headers: {
-    //         'Authorization': `Bearer ${token}`
-    //     }
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //     console.log(`got data ${JSON.stringify(data)}`);
-    //     setEvents(data);
-    // })
-    // .catch(error => console.error('Error fetching events:', error));
+  const fetchEvents = async () => {
+    onAuthStateChanged(auth, async (user) => {
+      const token = await user.getIdToken();
+
+      if (user) {
+        fetch('http://localhost:3001/events', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          setEvents(data)
+        })
+        .catch(error => {
+          console.error('Error fetching events:', error);
+        });
+  
+      } else {
+        // User is signed out
+        console.log('No user is logged in, cannot fetch events.');
+      }
+    });
 };
 
   const handleViewChange = (view) => {
     setCalendarView(view);
     localStorage.setItem('calendarView', view);
-    console.log(`calendarView ${calendarView}`);
   };
 
   const handleCloseEventDialogModal = () => {
@@ -68,7 +68,6 @@ function App() {
   };
 
   const handleLogout = async () => {
-    // localStorage.removeItem('emailForSignIn');
     localStorage.removeItem('calendarView');
     try {
       await logout();
@@ -94,7 +93,6 @@ function App() {
   };
 
   const handleEventClick = (clickInfo) => {
-    console.log(`clickInfo ${JSON.stringify(clickInfo.event)}`);
     setSelectedEvent({
       id: clickInfo.event.extendedProps._id,
       formattedStartDate: moment(clickInfo.event.start).format('YYYY-MM-DD hh:mm A'),
@@ -113,7 +111,9 @@ function App() {
 
 
   const handleEventSubmit = async (payload) => {
-    const token = localStorage.getItem('accessToken');
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const token = await user.getIdToken();
 
     try {
       const response = await fetch('http://localhost:3001/events', {
@@ -138,7 +138,9 @@ function App() {
   }
 
   const handleEventDelete = async (eventId) => {
-    const token = localStorage.getItem('accessToken');
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const token = await user.getIdToken();
 
     try {
       const response = await fetch(`http://localhost:3001/events/${eventId}`, {

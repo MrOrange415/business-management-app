@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, createContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../config/firebase-config';
-import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, signOut } from 'firebase/auth';
+import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }) => {
             if (user) {
                 setCurrentUser(user);
             } else {
+                console.log(`user not found.  logging out`);
                 navigate('/login');
             }
         });
