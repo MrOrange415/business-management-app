@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import Button from '@mui/material/Button';
 import EventDialogModal from '../../components/EventDialogModal';
 
-const Calendar = ({ handleLogout, handleViewChange, calendarView, handleDateClick, handleEventClick, events, eventDialogModalOpen, handleCloseEventDialogModal, handleEventSubmit, handleEventDelete, selectedEvent }) => {
+const Calendar = ({ handleLogout, handleViewChange, calendarView, handleDateClick, handleEventClick, events, eventDialogModalOpen, handleCloseEventDialogModal, handleEventSubmit, handleEventDelete, selectedEvent, isNewEvent }) => {
     return (
         <>
             <div className="logout-button">

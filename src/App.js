@@ -15,6 +15,7 @@ function App() {
   const [eventDialogModalOpen, setEventDialogModalOpen] = useState(false);
   const [calendarView, setCalendarView] = useState(localStorage.getItem('calendarView') || 'dayGridMonth');
   const [events, setEvents] = useState([]);
+  const [isNewEvent, setIsNewEvent] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState({
     id: '',
     formattedStartDate: '',
@@ -56,7 +57,7 @@ function App() {
         console.log('No user is logged in, cannot fetch events.');
       }
     });
-};
+  };
 
   const handleViewChange = (view) => {
     setCalendarView(view);
@@ -81,6 +82,8 @@ function App() {
   }
 
   const handleDateClick = (arg) => {
+    setIsNewEvent(true);
+
     setSelectedEvent({
       formattedStartDate: moment(arg.date).format('YYYY-MM-DD hh:mm A'),
       formattedEndDate: moment(arg.date).add(30, 'minutes').format('YYYY-MM-DD hh:mm A'),
@@ -93,6 +96,8 @@ function App() {
   };
 
   const handleEventClick = (clickInfo) => {
+    setIsNewEvent(false);
+
     setSelectedEvent({
       id: clickInfo.event.extendedProps._id,
       formattedStartDate: moment(clickInfo.event.start).format('YYYY-MM-DD hh:mm A'),
@@ -103,37 +108,53 @@ function App() {
     });
 
     setEventDialogModalOpen(true);
-};
+  };
 
   const handleCloseModal = () => {
     setModalOpen(false);
   };
 
-
   const handleEventSubmit = async (payload) => {
+    console.log(`payload ${JSON.stringify(payload)}`);
     const auth = getAuth();
     const user = auth.currentUser;
     const token = await user.getIdToken();
+    let response;
 
-    try {
-      const response = await fetch('http://localhost:3001/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        setEventDialogModalOpen(false);
-        fetchEvents();
-        return response.json();
-      } else {
-        console.error('Event creation failed', await response.text());
+    if (isNewEvent) {
+      try {
+        response = await fetch('http://localhost:3001/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (error) {
+        console.error('Network error', error);
       }
-    } catch (error) {
-      console.error('Network error', error);
+    } else {
+      try {
+        response = await fetch(`http://localhost:3001/events/${payload.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (error) {
+        console.error('Network error', error);
+      }
+    }
+
+    if (response.ok) {
+      setEventDialogModalOpen(false);
+      fetchEvents();
+      return response.json();
+    } else {
+      console.error('Event creation failed', await response.text());
     }
   }
 
@@ -163,7 +184,6 @@ function App() {
     }
   }
   
-
   return (
       <Routes>
         <Route path="/login" element={<LoginModal open={modalOpen} onClose={handleCloseModal} />} />
@@ -179,6 +199,7 @@ function App() {
           handleEventSubmit={handleEventSubmit}
           handleEventDelete={handleEventDelete}
           selectedEvent={selectedEvent}
+          isNewEvent={isNewEvent}
         />} />
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/auth/finish-sign-up" element={<FinishSignUp />} />

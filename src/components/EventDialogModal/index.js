@@ -21,6 +21,7 @@ function EventDialogModal({ open, onClose, onSubmit, onDelete, event }) {
 
   const handleSubmit = () => {
     const payload = {
+      ...(event.id && { id: event.id }),
       title,
       description,
       start: moment(event.formattedStartDate).format(),
