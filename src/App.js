@@ -81,6 +81,30 @@ function App() {
     }
   }
 
+  const handleStartDateChange = (event) => {
+    let updatedEvent = {
+      ...selectedEvent,
+      formattedStartDate: event
+    }
+
+    if (updatedEvent.formattedStartDate.isSameOrAfter(moment(selectedEvent.formattedEndDate))) {
+      updatedEvent = {
+        ...updatedEvent,
+        formattedEndDate: updatedEvent.formattedStartDate.clone().add(30, 'minutes')
+      }
+    }
+    setSelectedEvent(updatedEvent);
+
+  };
+
+  const handleEndDateChange = (event) => {
+    let updatedEvent = {
+      ...selectedEvent,
+      formattedEndDate: event
+    }
+    setSelectedEvent(updatedEvent);
+  };
+
   const handleDateClick = (arg) => {
     setIsNewEvent(true);
 
@@ -199,7 +223,8 @@ function App() {
           handleEventSubmit={handleEventSubmit}
           handleEventDelete={handleEventDelete}
           selectedEvent={selectedEvent}
-          isNewEvent={isNewEvent}
+          handleStartDateChange={handleStartDateChange}
+          handleEndDateChange={handleEndDateChange}
         />} />
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/auth/finish-sign-up" element={<FinishSignUp />} />

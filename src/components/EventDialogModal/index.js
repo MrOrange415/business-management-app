@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import { Dialog, TextField, Button, DialogActions, DialogContent, DialogTitle, Box } from '@mui/material';
+import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
-function EventDialogModal({ open, onClose, onSubmit, onDelete, event }) {
+function EventDialogModal({ open, onClose, onSubmit, onDelete, event, handleStartDateChange, handleEndDateChange }) {
   const [mode, setMode] = useState(event.mode);
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
@@ -60,26 +62,20 @@ function EventDialogModal({ open, onClose, onSubmit, onDelete, event }) {
           value={description}
           onChange={e => setDescription(e.target.value)}
         />
-        <TextField
-          margin="dense"
+      <LocalizationProvider dateAdapter={AdapterMoment}>
+        <DateTimePicker
           label="Start Date"
-          fullWidth
-          variant="outlined"
-          value={event.formattedStartDate}
-          InputProps={{
-            readOnly: true,
-          }}
+          value={moment(event.formattedStartDate)}
+          onChange={handleStartDateChange}
+          renderInput={(params) => <TextField {...params} fullWidth margin="dense" />}
         />
-        <TextField
-          margin="dense"
+        <DateTimePicker
           label="End Date"
-          fullWidth
-          variant="outlined"
-          value={event.formattedEndDate}
-          InputProps={{
-            readOnly: false,
-          }}
+          value={moment(event.formattedEndDate)}
+          onChange={handleEndDateChange}
+          renderInput={(params) => <TextField {...params} fullWidth margin="dense" />}
         />
+      </LocalizationProvider>
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'space-between', width: '95%' }}>
       <Box sx={{ flex: '0 1 auto' }}> 
