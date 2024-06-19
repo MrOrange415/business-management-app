@@ -148,7 +148,7 @@ function App() {
 
     if (isNewEvent) {
       try {
-        response = await fetch(`${BACKEND_URL}}/events`, {
+        response = await fetch(`${BACKEND_URL}/events`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
