@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
+const FRONT_END_URL = 'https://business-management-app-bice.vercel.app'
 
 function LoginModal({ open, onClose }) {
   const { sendSignInLink } = useAuth();
@@ -8,7 +9,7 @@ function LoginModal({ open, onClose }) {
 
   const handleLogin = async () => {
     const actionCodeSettings = {
-      url: 'http://localhost:3000/auth/finish-sign-up', // Your redirect URL after sign-in
+      url: `${FRONT_END_URL}/auth/finish-sign-up`, // Your redirect URL after sign-in
       handleCodeInApp: true,
     };
     sendSignInLink(email, actionCodeSettings).then(() => {
