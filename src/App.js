@@ -8,6 +8,7 @@ import Calendar from './components/Calendar';
 import FinishSignUp from './components/FinishSignUp';
 import moment from 'moment';
 import './App.css';
+const BACKEND_URL = 'https://serene-coast-40702-6512a6817c62.herokuapp.com';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -36,10 +37,10 @@ function App() {
 
   const fetchEvents = async () => {
     onAuthStateChanged(auth, async (user) => {
-      const token = await user.getIdToken();
-
       if (user) {
-        fetch('http://localhost:3001/events', {
+        const token = await user.getIdToken();
+
+        fetch(`http://${BACKEND_URL}/events`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -147,7 +148,7 @@ function App() {
 
     if (isNewEvent) {
       try {
-        response = await fetch('http://localhost:3001/events', {
+        response = await fetch(`${BACKEND_URL}}/events`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ function App() {
       }
     } else {
       try {
-        response = await fetch(`http://localhost:3001/events/${payload.id}`, {
+        response = await fetch(`${BACKEND_URL}/events/${payload.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -188,7 +189,7 @@ function App() {
     const token = await user.getIdToken();
 
     try {
-      const response = await fetch(`http://localhost:3001/events/${eventId}`, {
+      const response = await fetch(`${BACKEND_URL}/events/${eventId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
