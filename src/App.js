@@ -38,7 +38,7 @@ function App() {
   const fetchEvents = async () => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log(`user ${user}`);
+        console.log(`user ${JSON.stringify(user)}`);
         const token = await user.getIdToken();
 
         fetch(`${BACKEND_URL}/events`, {
