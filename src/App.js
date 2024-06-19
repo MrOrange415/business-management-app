@@ -38,6 +38,7 @@ function App() {
   const fetchEvents = async () => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        console.log(`firebase.auth().currentUser ${firebase.auth().currentUser}`);
         console.log(`user ${JSON.stringify(user)}`);
         const token = await user.getIdToken();
 
