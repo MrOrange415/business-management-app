@@ -39,7 +39,7 @@ function App() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const token = await user.getIdToken();
-        console.log(`token ${token}`);
+
         fetch(`${BACKEND_URL}/events`, {
           headers: {
             'Authorization': `Bearer ${token}`
