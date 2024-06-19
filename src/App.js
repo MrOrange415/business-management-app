@@ -40,7 +40,7 @@ function App() {
       if (user) {
         const token = await user.getIdToken();
 
-        fetch(`http://${BACKEND_URL}/events`, {
+        fetch(`${BACKEND_URL}/events`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
